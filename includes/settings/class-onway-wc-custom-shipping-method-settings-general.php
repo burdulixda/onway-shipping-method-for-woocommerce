@@ -57,6 +57,24 @@ class Onway_WC_Custom_Shipping_Method_Settings_General extends Onway_WC_Custom_S
 			),
 		);
 
+		$shipping_settings = array(
+			array(
+				'title'    => __( 'Shipping Settings', 'onway-shipping-method-for-woocommerce' ),
+				'type'     => 'title',
+				'id'       => 'onway_wc_custom_shipping_method_shipping_options'
+			),
+			array(
+				'title'		 => __('Max weight (kg)', 'onway-shipping-method-for-woocommerce' ),
+				'type'		 => 'number',
+				'desc'		 => __( 'Maximum allowed weight', 'onway-woo' ),
+				'default'  => '50'
+			),
+			array(
+				'type'     => 'sectionend',
+				'id'       => 'onway_wc_custom_shipping_method_shipping_options',
+			),
+		);
+
 		$admin_settings = array(
 			array(
 				'title'    => __( 'Admin Settings', 'onway-shipping-method-for-woocommerce' ),
@@ -117,60 +135,7 @@ class Onway_WC_Custom_Shipping_Method_Settings_General extends Onway_WC_Custom_S
 			),
 		);
 
-		$icon_and_desc_settings = array(
-			array(
-				'title'    => __( 'Icons & Descriptions Settings', 'onway-shipping-method-for-woocommerce' ),
-				'type'     => 'title',
-				'id'       => 'onway_wc_custom_shipping_method_icon_and_desc_options',
-				'desc'     => sprintf( __( 'Visit %s to set each method\'s icon and description.', 'onway-shipping-method-for-woocommerce' ),
-					'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=shipping' ) . '">' .
-						__( 'WooCommerce > Settings > Shipping', 'onway-shipping-method-for-woocommerce' ) . '</a>' ),
-			),
-			array(
-				'title'    => __( 'Icons & Descriptions', 'onway-shipping-method-for-woocommerce' ),
-				'desc'     => '<strong>' . __( 'Enable section', 'onway-shipping-method-for-woocommerce' ) . '</strong>',
-				'desc_tip' => apply_filters( 'onway_wc_custom_shipping_method_settings', sprintf( __( 'You will need %s plugin to set icons and descriptions.', 'onway-shipping-method-for-woocommerce' ),
-					'<a target="_blank" href="https://wpfactory.com/item/custom-shipping-methods-for-woocommerce/">' .
-						__( 'Custom Shipping Methods for WooCommerce Pro', 'onway-shipping-method-for-woocommerce' ) . '</a>' ) ),
-				'id'       => 'onway_wc_custom_shipping_method_icon_desc_enabled',
-				'default'  => 'no',
-				'type'     => 'checkbox',
-				'custom_attributes' => apply_filters( 'onway_wc_custom_shipping_method_settings', array( 'disabled' => 'disabled' ) ),
-			),
-			array(
-				'title'    => __( 'Icon template', 'onway-shipping-method-for-woocommerce' ),
-				'desc'     => sprintf( __( 'Placeholders: %s', 'onway-shipping-method-for-woocommerce' ), '<code>%icon_url%</code>' ),
-				'id'       => 'onway_wc_custom_shipping_method_icon_template',
-				'default'  => '<img style="display:inline;" src="%icon_url%">',
-				'type'     => 'textarea',
-				'css'      => 'width:100%',
-				'onway_wc_csm_raw' => true,
-			),
-			array(
-				'title'    => __( 'Description template', 'onway-shipping-method-for-woocommerce' ),
-				'desc'     => sprintf( __( 'Placeholders: %s', 'onway-shipping-method-for-woocommerce' ), '<code>%desc_text%</code>' ),
-				'id'       => 'onway_wc_custom_shipping_method_desc_template',
-				'default'  => '<p style="font-size:small;font-style:italic;">%desc_text%</p>',
-				'type'     => 'textarea',
-				'css'      => 'width:100%',
-				'onway_wc_csm_raw' => true,
-			),
-			array(
-				'title'    => __( 'Final template', 'onway-shipping-method-for-woocommerce' ),
-				'desc'     => sprintf( __( 'Placeholders: %s', 'onway-shipping-method-for-woocommerce' ), '<code>%icon%</code>, <code>%desc%</code>, <code>%label%</code>' ),
-				'id'       => 'onway_wc_custom_shipping_method_icon_desc_template',
-				'default'  => '%icon%%label%%desc%',
-				'type'     => 'textarea',
-				'css'      => 'width:100%',
-				'onway_wc_csm_raw' => true,
-			),
-			array(
-				'type'     => 'sectionend',
-				'id'       => 'onway_wc_custom_shipping_method_icon_and_desc_options',
-			),
-		);
-
-		return array_merge( $plugin_settings, $admin_settings, $frontend_settings, $icon_and_desc_settings );
+		return array_merge( $plugin_settings, $shipping_settings, $admin_settings, $frontend_settings );
 	}
 
 }

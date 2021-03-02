@@ -68,15 +68,9 @@ final class Onway_WC_Custom_Shipping_Method {
 	function __construct() {
 
 		// Check for active plugins
-		if (
-			! $this->is_plugin_active( 'woocommerce/woocommerce.php' ) ||
-			( 'custom-shipping-methods-for-woocommerce.php' === basename( __FILE__ ) && $this->is_plugin_active( 'custom-shipping-methods-for-woocommerce-pro/custom-shipping-methods-for-woocommerce-pro.php' ) )
-		) {
+		if ( 'onway-shipping-method-for-woocommerce.php' !== basename( __FILE__ ) ) {
 			return;
 		}
-
-		// Set up localisation
-		load_plugin_textdomain( 'onway-shipping-method-for-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/langs/' );
 
 		// Include required files
 		$this->includes();

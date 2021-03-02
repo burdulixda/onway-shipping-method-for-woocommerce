@@ -20,7 +20,7 @@ class Onway_WC_Settings_Custom_Shipping_Method extends WC_Settings_Page {
 	 * @since   1.0.0
 	 */
 	function __construct() {
-		$this->id    = 'onway_wc_custom_shipping_methods';
+		$this->id    = 'onway_wc_custom_shipping_method';
 		$this->label = __( 'Onway Shipping Method', 'onway-shipping-method-for-woocommerce' );
 		parent::__construct();
 		add_filter( 'woocommerce_admin_settings_sanitize_option', array( $this, 'maybe_unsanitize_option' ), PHP_INT_MAX, 3 );
