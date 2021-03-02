@@ -49,35 +49,6 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	function init() {
 		$this->instance_form_fields     = include( 'settings/settings-custom-shipping.php' );
 		$this->title                    = $this->get_option( 'title' );
-		$this->onway_wc_csm_icon          = $this->get_option( 'onway_wc_csm_icon' );
-		$this->onway_wc_csm_desc          = $this->get_option( 'onway_wc_csm_desc' );
-		$this->tax_status               = $this->get_option( 'tax_status' );
-		$this->cost                     = $this->get_option( 'cost' );
-		$this->min_cost_limit           = $this->get_option( 'min_cost_limit' );
-		$this->max_cost_limit           = $this->get_option( 'max_cost_limit' );
-		$this->free_shipping_min_amount = $this->get_option( 'free_shipping_min_amount', 0 );
-		$this->free_shipping_products   = $this->get_option( 'free_shipping_products', '' );
-		$this->type                     = $this->get_option( 'type', 'class' );
-		$this->min_cost                 = $this->get_option( 'min_cost' );
-		$this->max_cost                 = $this->get_option( 'max_cost' );
-		$this->min_weight               = $this->get_option( 'min_weight' );
-		$this->max_weight               = $this->get_option( 'max_weight' );
-		$this->min_volume               = $this->get_option( 'min_volume' );
-		$this->max_volume               = $this->get_option( 'max_volume' );
-		$this->min_qty                  = $this->get_option( 'min_qty' );
-		$this->max_qty                  = $this->get_option( 'max_qty' );
-		$this->min_distance             = $this->get_option( 'min_distance' );
-		$this->max_distance             = $this->get_option( 'max_distance' );
-		$this->distance_calculation     = $this->get_option( 'distance_calculation' );
-		$this->incl_product             = $this->get_option( 'incl_product' );
-		$this->excl_product             = $this->get_option( 'excl_product' );
-		$this->incl_product_cat         = $this->get_option( 'incl_product_cat' );
-		$this->excl_product_cat         = $this->get_option( 'excl_product_cat' );
-		$this->incl_product_tag         = $this->get_option( 'incl_product_tag' );
-		$this->excl_product_tag         = $this->get_option( 'excl_product_tag' );
-		$this->require_type             = $this->get_option( 'require_type', 'one' );
-		$this->limit_calc               = $this->get_option( 'limit_calc', 'class' );
-		$this->return_url               = $this->get_option( 'return_url', '' );
 	}
 
 	/**

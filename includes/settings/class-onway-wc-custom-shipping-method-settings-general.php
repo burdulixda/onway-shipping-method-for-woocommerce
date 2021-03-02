@@ -63,7 +63,7 @@ class Onway_WC_Custom_Shipping_Method_Settings_General extends Onway_WC_Custom_S
 				'type'     => 'title',
 				'id'       => 'onway_wc_custom_shipping_method_shipping_options'
 			),
-			array(
+			'max_weight'	=> array(
 				'title'		 => __('Max weight (kg)', 'onway-shipping-method-for-woocommerce' ),
 				'type'		 => 'number',
 				'desc'		 => __( 'Maximum allowed weight', 'onway-woo' ),
@@ -135,11 +135,26 @@ class Onway_WC_Custom_Shipping_Method_Settings_General extends Onway_WC_Custom_S
 			),
 		);
 
-		return array_merge( $plugin_settings, $shipping_settings, $admin_settings, $frontend_settings );
+		$onway_settings = array_merge( $plugin_settings, $shipping_settings, $admin_settings, $frontend_settings );
+		return $onway_settings;
+	}
+
+	function get_allowed_shipping_methods() {
+		$onway_settings = $this->get_settings();
+
+		for ( $i = 0; $i <= $onway_settings['max_weight']['default']; $i += 5 ) {
+			$onway_settings['weight_before'.$i.'_kg'] = array(
+				'title'		=> __("Price below $i kg", 'onway-shipping-method-for-woocommerce'),
+				'type'		=> 'text',
+				'default'	=> $i
+			);
+		}
+
+		return $onway_settings;
 	}
 
 }
 
 endif;
 
-return new onway_WC_Custom_Shipping_Method_Settings_General();
+return new Onway_WC_Custom_Shipping_Method_Settings_General();
