@@ -12,12 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$globalShippingSettings = new Onway_WC_Custom_Shipping_Method_Settings_General();
-$globalShippingSettingsArray = $globalShippingSettings->get_allowed_shipping_methods();
-$globalShippingMaxWeight = $globalShippingSettingsArray['max_weight']['default'];
-
-print_r($globalShippingMaxWeight);
-
 $availability_extra_desc_zero  = ' ' . __( 'Ignored if set to zero.', 'onway-shipping-method-for-woocommerce' );
 $availability_extra_desc_blank = ' ' . __( 'Ignored if empty.', 'onway-shipping-method-for-woocommerce' );
 $availability_extra_desc_disabled = ' ' . __( 'Ignored if status is disabled.', 'onway-shipping-method-for-woocommerce' );
@@ -75,7 +69,29 @@ $settings = array_merge( $settings, array(
 		'desc_tip'          => __( 'Enter a cost (excl. tax) or sum, e.g. <code>10.00 * [qty]</code>.', 'onway-shipping-method-for-woocommerce' ),
 		'css'               => 'width:100%',
 	),
+	'conditional_cost' => array(
+		'title'             => __( 'Conditional cost', 'onway-shipping-method-for-woocommerce' ),
+		'type'              => 'select',
+		'class'             => 'wc-enhanced-select',
+		'default'           => 'disabled',
+		'options'           => array(
+			'enabled' => __( 'Enabled', 'onway-shipping-method-for-woocommerce' ),
+			'disabled'=> __( 'Disabled', 'onway-shipping-method-for-woocommerce' ),
+		),
+		'css'               => 'width:100%',
+	),
 ) );
+
+// Conditional shipping price fields
+for ( $i = 0; $i <= $this->max_weight; $i += 5 ) {
+	$conditional_shipping_prices['weight_before_'.$i.'_kg'] = array(
+		'title'		=> __( "Price below $i kg", "onway-shipping-method-for-woocommerce" ),
+		'type'		=> "text",
+		'default'	=> $i
+	);
+}
+
+$settings = array_merge( $settings, $conditional_shipping_prices );
 
 // Shipping class settings
 $shipping_classes = WC()->shipping->get_shipping_classes();

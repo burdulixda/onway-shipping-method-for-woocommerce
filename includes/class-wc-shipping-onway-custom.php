@@ -34,6 +34,7 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 			'instance-settings',
 			'instance-settings-modal',
 		);
+		$this->max_weight 					 = get_option( 'onway_wc_custom_shipping_method_max_weight', 'სატესტო' );
 		$this->init();
 
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
