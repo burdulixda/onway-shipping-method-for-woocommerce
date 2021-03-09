@@ -83,11 +83,12 @@ $settings = array_merge( $settings, array(
 ) );
 
 // Conditional shipping price fields
-for ( $i = 0; $i <= $this->max_weight; $i += 5 ) {
-	$conditional_shipping_prices['weight_before_'.$i.'_kg'] = array(
+for ( $i = $this->weight_steps; $i <= $this->max_weight; $i += $this->weight_steps ) {
+	$conditional_shipping_prices['weight_below_'.$i.'_kg'] = array(
 		'title'		=> __( "Price below $i kg", "onway-shipping-method-for-woocommerce" ),
-		'type'		=> "text",
-		'default'	=> $i
+		'type'		=> 'number',
+		'default'	=> $i,
+		'id'			=> 'onway_wc_custom_shipping_method_weight_below_'.$i.'_kg'
 	);
 }
 

@@ -64,11 +64,18 @@ class Onway_WC_Custom_Shipping_Method_Settings_General extends Onway_WC_Custom_S
 				'id'       => 'onway_wc_custom_shipping_method_shipping_options'
 			),
 			'max_weight'	=> array(
-				'title'		 => __('Max weight (kg)', 'onway-shipping-method-for-woocommerce' ),
+				'title'		 => __( 'Max weight (kg)', 'onway-shipping-method-for-woocommerce' ),
 				'type'		 => 'number',
-				'desc'		 => __( 'Maximum allowed weight', 'onway-woo' ),
+				'desc'		 => __( 'Maximum allowed weight', 'onway-shipping-method-for-woocommerce' ),
 				'default'  => '50',
 				'id'			 => 'onway_wc_custom_shipping_method_max_weight'
+			),
+			'weight_steps'	=> array(
+				'title'		 => __( 'Weight steps', 'onway-shipping-method-for-woocommerce' ),
+				'type'		 => 'number',
+				'desc'		 => __( 'Increment operator', 'onway-shipping-method-for-woocommerce' ),
+				'default'  => '5',
+				'id'			 => 'onway_wc_custom_shipping_method_weight_steps'
 			),
 			array(
 				'type'     => 'sectionend',

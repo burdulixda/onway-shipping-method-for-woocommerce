@@ -34,7 +34,9 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 			'instance-settings',
 			'instance-settings-modal',
 		);
-		$this->max_weight 					 = get_option( 'onway_wc_custom_shipping_method_max_weight', 'სატესტო' );
+		$this->max_weight 					 = get_option( 'onway_wc_custom_shipping_method_max_weight', '0' );
+		$this->weight_steps					 = get_option( 'onway_wc_custom_shipping_method_weight_steps', '0' );
+
 		$this->init();
 
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -50,6 +52,13 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	function init() {
 		$this->instance_form_fields     = include( 'settings/settings-custom-shipping.php' );
 		$this->title                    = $this->get_option( 'title' );
+
+		for ( $i = $this->weight_steps; $i <= $this->max_weight; $i += $this->weight_steps ) {
+			$this->{'weight_below_'."{$i}".'_kg'} = $this->get_option( 'weight_below_'.$i.'_kg', 0 );
+
+			$this->weight_based_cost[$i] = $this->get_option( 'weight_below_'.$i.'_kg', 0 );
+		}
+
 	}
 
 	/**
@@ -83,147 +92,74 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	 * @param   array $package
 	 * @return  bool
 	 */
-	function is_available( $package ) {
-		$available = parent::is_available( $package );
-		if ( $available ) {
-			// Min/Max
-			$conditions = array( 'cost', 'weight', 'volume', 'qty', 'distance' );
-			foreach ( $conditions as $condition ) {
-				$min = 'min_' . $condition;
-				$max = 'max_' . $condition;
-				if ( 0 != $this->{$min} || 0 != $this->{$max} ) {
-					switch ( $condition ) {
-						case 'cost':
-							$total = $package['contents_cost'];
-							break;
-						case 'weight':
-							$total = onway_wc_custom_shipping_method()->core->get_package_item_weight( $package );
-							break;
-						case 'volume':
-							$total = onway_wc_custom_shipping_method()->core->get_package_item_volume( $package );
-							break;
-						case 'qty':
-							$total = $this->get_package_item_qty( $package );
-							break;
-						case 'distance':
-							add_shortcode( 'distance', array( onway_wc_custom_shipping_method()->core, 'distance' ) );
-							$total = do_shortcode( $this->distance_calculation );
-							break;
-						default:
-							$total = 0;
-					}
-					if ( ( 0 != $this->{$min} && $total < $this->{$min} ) || ( 0 != $this->{$max} && $total > $this->{$max} ) ) {
-						return false;
-					}
-				}
-			}
-			// Include/Exclude
-			$conditions = array( 'product', 'product_cat', 'product_tag' );
-			foreach ( $conditions as $condition ) {
-				$include = 'incl_' . $condition;
-				$exclude = 'excl_' . $condition;
-				$include = trim( $this->{$include} );
-				$exclude = trim( $this->{$exclude} );
-				if ( '' != $include || '' != $exclude ) {
-					$package_products = $this->get_package_products_data( $package['contents'], $condition );
-					if ( ! empty( $package_products ) ) {
-						$package_products   = array_unique( $package_products );
-						$_include           = array_unique( array_map( 'trim', explode( ',', $include ) ) );
-						$_exclude           = array_unique( array_map( 'trim', explode( ',', $exclude ) ) );
-						$_include_intersect = array_intersect( $_include, $package_products );
-						$_exclude_intersect = array_intersect( $_exclude, $package_products );
-						if (
-							( '' != $include && (
-								( 'one'       === $this->require_type && empty( $_include_intersect ) ) ||
-								( 'one_only'  === $this->require_type && count( $_include_intersect ) != count( $package_products ) ) ||
-								( 'all'       === $this->require_type && count( $_include_intersect ) != count( $_include ) ) ||
-								( 'all_only'  === $this->require_type &&
-									( count( $_include_intersect ) != count( $_include ) || count( $_include_intersect ) != count( $package_products ) )
-								)
-							) ) ||
-							( '' != $exclude && ! empty( $_exclude_intersect ) )
-						) {
-							return false;
-						}
-					}
-				}
-			}
-		}
-		return $available;
-	}
-
-	/**
-	 * evaluate a cost from a sum/string.
-	 *
-	 * @version 1.6.0
-	 * @since   1.0.0
-	 * @param   string $sum
-	 * @param   array  $args
-	 * @return  string
-	 * @todo    [feature] (important) Free shipping by product ID: add "require all" option
-	 * @todo    [feature] (important) Free shipping by product ID: add similar "Free shipping by product category/tag ID" options
-	 */
-	function evaluate_cost( $sum, $args = array() ) {
-		include_once( WC()->plugin_path() . '/includes/libraries/class-wc-eval-math.php' );
-
-		// Allow 3rd parties to process shipping cost arguments
-		$args           = apply_filters( 'woocommerce_evaluate_shipping_cost_args', $args, $sum, $this );
-		$locale         = localeconv();
-		$decimals       = array( wc_get_price_decimal_separator(), $locale['decimal_point'], $locale['mon_decimal_point'], ',' );
-		$this->fee_cost = $args['cost'];
-
-		do_action( 'onway_wc_custom_shipping_method_evaluate_cost_args', $args );
-
-		// Expand shortcodes
-		add_shortcode( 'fee', array( $this, 'fee' ) );
-
-		foreach ( apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_shortcodes', array() ) as $shortcode => $function ) {
-			add_shortcode( $shortcode, $function );
-		}
-
-		$replaced_values = apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_replace', array(
-			'[qty]'  => $args['qty'],
-			'[cost]' => $args['cost'],
-		), $args );
-
-		$sum = do_shortcode( str_replace( array_keys( $replaced_values ), $replaced_values, $sum ) );
-
-		remove_shortcode( 'fee', array( $this, 'fee' ) );
-
-		foreach ( apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_shortcodes', array() ) as $shortcode => $function ) {
-			remove_shortcode( $shortcode, $function );
-		}
-
-		// Remove whitespace from string
-		$sum = preg_replace( '/\s+/', '', $sum );
-
-		// Remove locale from string
-		$sum = str_replace( $decimals, '.', $sum );
-
-		// Trim invalid start/end characters
-		$sum = rtrim( ltrim( $sum, "\t\n\r\0\x0B+*/" ), "\t\n\r\0\x0B+-*/" );
-
-		// Filter
-		$sum = apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_sum', $sum );
-
-		// Do the math
-		if ( $sum ) {
-
-			$sum = apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_sum_evaluated', WC_Eval_Math::evaluate( $sum ) );
-
-			// Limits
-			if ( in_array( $this->limit_calc, array( 'class', 'all' ) ) ) {
-				$sum = apply_filters( 'onway_wc_custom_shipping_method_min_max_limits', $sum, $this );
-			}
-
-			// Final filter
-			$sum = apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_final', $sum, $this, $args );
-
-		}
-
-		// Return
-		return $sum ? $sum : 0;
-	}
+	// function is_available( $package ) {
+	// 	$available = parent::is_available( $package );
+	// 	if ( $available ) {
+	// 		// Min/Max
+	// 		$conditions = array( 'cost', 'weight', 'volume', 'qty', 'distance' );
+	// 		foreach ( $conditions as $condition ) {
+	// 			$min = 'min_' . $condition;
+	// 			$max = 'max_' . $condition;
+	// 			if ( 0 != $this->{$min} || 0 != $this->{$max} ) {
+	// 				switch ( $condition ) {
+	// 					case 'cost':
+	// 						$total = $package['contents_cost'];
+	// 						break;
+	// 					case 'weight':
+	// 						$total = onway_wc_custom_shipping_method()->core->get_package_item_weight( $package );
+	// 						break;
+	// 					case 'volume':
+	// 						$total = onway_wc_custom_shipping_method()->core->get_package_item_volume( $package );
+	// 						break;
+	// 					case 'qty':
+	// 						$total = $this->get_package_item_qty( $package );
+	// 						break;
+	// 					case 'distance':
+	// 						add_shortcode( 'distance', array( onway_wc_custom_shipping_method()->core, 'distance' ) );
+	// 						$total = do_shortcode( $this->distance_calculation );
+	// 						break;
+	// 					default:
+	// 						$total = 0;
+	// 				}
+	// 				if ( ( 0 != $this->{$min} && $total < $this->{$min} ) || ( 0 != $this->{$max} && $total > $this->{$max} ) ) {
+	// 					return false;
+	// 				}
+	// 			}
+	// 		}
+	// 		// Include/Exclude
+	// 		$conditions = array( 'product', 'product_cat', 'product_tag' );
+	// 		foreach ( $conditions as $condition ) {
+	// 			$include = 'incl_' . $condition;
+	// 			$exclude = 'excl_' . $condition;
+	// 			$include = trim( $this->{$include} );
+	// 			$exclude = trim( $this->{$exclude} );
+	// 			if ( '' != $include || '' != $exclude ) {
+	// 				$package_products = $this->get_package_products_data( $package['contents'], $condition );
+	// 				if ( ! empty( $package_products ) ) {
+	// 					$package_products   = array_unique( $package_products );
+	// 					$_include           = array_unique( array_map( 'trim', explode( ',', $include ) ) );
+	// 					$_exclude           = array_unique( array_map( 'trim', explode( ',', $exclude ) ) );
+	// 					$_include_intersect = array_intersect( $_include, $package_products );
+	// 					$_exclude_intersect = array_intersect( $_exclude, $package_products );
+	// 					if (
+	// 						( '' != $include && (
+	// 							( 'one'       === $this->require_type && empty( $_include_intersect ) ) ||
+	// 							( 'one_only'  === $this->require_type && count( $_include_intersect ) != count( $package_products ) ) ||
+	// 							( 'all'       === $this->require_type && count( $_include_intersect ) != count( $_include ) ) ||
+	// 							( 'all_only'  === $this->require_type &&
+	// 								( count( $_include_intersect ) != count( $_include ) || count( $_include_intersect ) != count( $package_products ) )
+	// 							)
+	// 						) ) ||
+	// 						( '' != $exclude && ! empty( $_exclude_intersect ) )
+	// 					) {
+	// 						return false;
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	return $available;
+	// }
 
 	/**
 	 * work out fee (shortcode).
@@ -257,6 +193,14 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 		return $calculated_fee;
 	}
 
+	function get_conditional_shipping_price( $weight ) {
+		foreach ( $this->weight_based_cost as $max_conditional_weight => $conditional_price ) {
+			if ( $max_conditional_weight >= $weight ) {
+				return $this->weight_based_cost[$max_conditional_weight];
+			}
+		}
+	}
+
 	/**
 	 * calculate_shipping function.
 	 *
@@ -266,6 +210,15 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	 * @todo    [feature] add "Free shipping calculation" option: "per class" (i.e. per package, as it is now), "per order" (i.e. total sum) and maybe "all"
 	 */
 	function calculate_shipping( $package = array() ) {
+		$weight = 0;
+
+		foreach ( $package['contents'] as $item_id => $values ) {
+			$_product = $values['data'];
+			$weight = $weight + $_product->get_weight() * $values['quantity'];
+		}
+
+		$weight = wc_get_weight( $weight, 'kg' );
+
 		$rate = array(
 			'id'      => $this->get_rate_id(),
 			'label'   => $this->title,
@@ -278,53 +231,20 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 		$cost      = $this->get_option( 'cost' );
 
 		if ( '' !== $cost ) {
-			$has_costs    = true;
-			$rate['cost'] = $this->evaluate_cost( $cost, apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_args_package', array(
-				'qty'     => $this->get_package_item_qty( $package ),
-				'cost'    => $package['contents_cost'],
-				'package' => $package,
-			), $package ) );
-		}
 
-		// Add shipping class costs.
-		$shipping_classes = WC()->shipping->get_shipping_classes();
+			$has_costs = true;
+			$rate = array(
+				'id'		=> 'onway_conditional_shipping_price',
+				'label'	=> $this->title,
+				'cost'	=> $this->get_conditional_shipping_price( $weight ),
+			);
 
-		if ( ! empty( $shipping_classes ) ) {
-			$found_shipping_classes = $this->find_shipping_classes( $package );
-			$highest_class_cost     = 0;
-
-			foreach ( $found_shipping_classes as $shipping_class => $products ) {
-				// Also handles BW compatibility when slugs were used instead of ids
-				$shipping_class_term = get_term_by( 'slug', $shipping_class, 'product_shipping_class' );
-				$class_cost_string   = $shipping_class_term && $shipping_class_term->term_id ? $this->get_option( 'class_cost_' . $shipping_class_term->term_id, $this->get_option( 'class_cost_' . $shipping_class, '' ) ) : $this->get_option( 'no_class_cost', '' );
-
-				if ( '' === $class_cost_string ) {
-					continue;
-				}
-
-				$has_costs  = true;
-				$class_cost = $this->evaluate_cost( $class_cost_string, apply_filters( 'onway_wc_custom_shipping_method_evaluate_cost_args_class', array(
-					'qty'      => array_sum( wp_list_pluck( $products, 'quantity' ) ),
-					'cost'     => array_sum( wp_list_pluck( $products, 'line_total' ) ),
-					'products' => $products,
-				), $products ) );
-
-				if ( 'class' === $this->type ) {
-					$rate['cost'] += $class_cost;
-				} else {
-					$highest_class_cost = $class_cost > $highest_class_cost ? $class_cost : $highest_class_cost;
-				}
-			}
-
-			if ( 'order' === $this->type && $highest_class_cost ) {
-				$rate['cost'] += $highest_class_cost;
-			}
 		}
 
 		// Limits
-		if ( in_array( $this->limit_calc, array( 'order', 'all' ) ) ) {
-			$rate['cost'] = apply_filters( 'onway_wc_custom_shipping_method_min_max_limits', $rate['cost'], $this );
-		}
+		// if ( in_array( $this->limit_calc, array( 'order', 'all' ) ) ) {
+		// 	$rate['cost'] = apply_filters( 'onway_wc_custom_shipping_method_min_max_limits', $rate['cost'], $this );
+		// }
 
 		// Add the rate
 		if ( $has_costs ) {
