@@ -19,24 +19,6 @@ $pro_link                      = '<a target="_blank" href="https://wpfactory.com
 $pro_desc_short                = sprintf( '.<br><em>' . 'This shortcode is available in %s plugin only' . '</em>', $pro_link );
 $pro_desc                      = sprintf( 'This option is available in %s plugin only.', $pro_link );
 
-$available_shortcodes = apply_filters( 'onway_wc_custom_shipping_method_shortcodes_desc', array(
-	'[qty]'                                           => __( 'number of items', 'onway-shipping-method-for-woocommerce' ),
-	'[cost]'                                          => __( 'total cost of items', 'onway-shipping-method-for-woocommerce' ),
-	'[weight]'                                        => __( 'total weight of items', 'onway-shipping-method-for-woocommerce' ),
-	'[volume]'                                        => __( 'total volume of items', 'onway-shipping-method-for-woocommerce' ),
-	'[fee percent="10" min_fee="20" max_fee=""]'      => __( 'percentage based fees', 'onway-shipping-method-for-woocommerce' ),
-	'[round]'                                         => __( 'rounding', 'onway-shipping-method-for-woocommerce' ) .
-		sprintf( ' (' . __( 'check examples %s', 'onway-shipping-method-for-woocommerce' ) . ')',
-			'<a target="_blank" href="https://wpfactory.com/item/custom-shipping-methods-for-woocommerce/#round-shortcode">' .
-				__( 'here', 'onway-shipping-method-for-woocommerce' ) . '</a>' ),
-) );
-$cost_desc = '';
-$cost_desc .= '<ul>';
-foreach ( $available_shortcodes as $shortcode => $shortcode_desc ) {
-	$cost_desc .= "<li>* <code>{$shortcode}</code> - {$shortcode_desc}.</li>";
-}
-$cost_desc .= '</ul>';
-
 // General settings
 $settings = array(
 	'title' => array(
@@ -64,9 +46,8 @@ $settings = array_merge( $settings, array(
 		'title'             => __( 'Cost', 'onway-shipping-method-for-woocommerce' ),
 		'type'              => 'text',
 		'placeholder'       => '',
-		'description'       => $cost_desc,
+		'description'       => __( 'Shipping method cost without conditional logic' ),
 		'default'           => '0',
-		'desc_tip'          => __( 'Enter a cost (excl. tax) or sum, e.g. <code>10.00 * [qty]</code>.', 'onway-shipping-method-for-woocommerce' ),
 		'css'               => 'width:100%',
 	),
 	'conditional_cost' => array(
@@ -177,9 +158,8 @@ $settings = array_merge( $settings, array(
 		'title'             => __( 'Express delivery price', 'onway-shipping-method-for-woocommerce' ),
 		'type'              => 'text',
 		'placeholder'       => '',
-		'description'       => __( 'Same shortcodes apply as general cost.', 'onway-shipping-method-for-woocommerce' ),
+		'description'       => __( 'Additional cost for Express delivery.', 'onway-shipping-method-for-woocommerce' ),
 		'default'           => '0',
-		'desc_tip'          => __( 'Enter a cost (excl. tax) or sum, e.g. <code>10.00 * [qty]</code>.', 'onway-shipping-method-for-woocommerce' ) . $availability_extra_desc_disabled,
 		'css'               => 'width:100%',
 	),
 ) );
