@@ -59,6 +59,17 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 			$this->weight_based_cost[$i] = $this->get_option( 'weight_below_'.$i.'_kg', 0 );
 		}
 
+		// for ( $i = 0; $i < 7; $i++ ) {
+		// 	$day = jddayofweek($i, 1);
+		// 	$day = lcfirst($day);
+
+		// 	$this->{"{$day}" . '_delivery_logic'} = $this->get_option( $day . '_delivery_logic', 0 );
+
+		// 	$this->conditional_delivery_date[$day] = $this->get_option( $day . '_delivery_logic', 0 );
+		// }
+
+		$this->monday_delivery_logic = $this->get_option( 'monday_delivery_logic', 0 );
+
 	}
 
 	/**
@@ -201,6 +212,19 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 		}
 	}
 
+	function get_conditional_shipping_dates() {
+		$conditional_dates = array();
+
+		for ( $i = 0; $i < 7; $i++ ) {
+			$day = jddayofweek( $i, 1 );
+			
+			$conditional_dates[$day] = $this->get_option( lcfirst($day) . '_delivery_logic', 0 );
+		}
+
+		return $conditional_dates;
+
+	}
+
 	/**
 	 * calculate_shipping function.
 	 *
@@ -237,6 +261,7 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 				'id'		=> 'onway_conditional_shipping_price',
 				'label'	=> $this->title,
 				'cost'	=> $this->get_conditional_shipping_price( $weight ),
+				'meta_data' => $this->get_conditional_shipping_dates()
 			);
 
 		}

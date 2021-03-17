@@ -164,6 +164,29 @@ $settings = array_merge( $settings, array(
 	),
 ) );
 
+// Delivery Dates
+$settings = array_merge( $settings, array(
+	'delivery_dates' => array(
+		'title'             => __( 'Delivery Dates', 'onway-shipping-method-for-woocommerce' ),
+		'type'              => 'title',
+		'default'           => '',
+		'description'       => __( 'Specific delivery dates for shipping method.', 'onway-shipping-method-for-woocommerce' ),
+	),
+) );
+
+for ( $i = 0; $i < 7; $i++ ) {
+	$day = jddayofweek($i, 1);
+	$lcDay = lcfirst($day);
+	$conditional_shipping_days[$lcDay.'_delivery_logic'] = array(
+		'title'		=> __( "$day logic", "onway-shipping-method-for-woocommerce" ),
+		'type'		=> 'number',
+		'default'	=> 1,
+		'id'			=> 'onway_wc_custom_shipping_method_'.$lcDay.'_delivery_logic'
+	);
+}
+
+$settings = array_merge( $settings, $conditional_shipping_days );
+
 // Advanced settings
 $settings = array_merge( $settings, array(
 	'advanced' => array(
@@ -181,5 +204,7 @@ $settings = array_merge( $settings, array(
 		'css'               => 'width:100%',
 	),
 ) );
+
+$this->form_fields = $settings;
 
 return $settings;

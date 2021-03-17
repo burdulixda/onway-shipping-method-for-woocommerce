@@ -79,6 +79,8 @@ final class Onway_WC_Custom_Shipping_Method {
 		if ( is_admin() ) {
 			$this->admin();
 		}
+
+		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'display_conditional_delivery_dates' ) );
 	}
 
 	/**
@@ -105,6 +107,29 @@ final class Onway_WC_Custom_Shipping_Method {
 	function includes() {
 		// Core
 		$this->core = require_once( 'includes/class-onway-wc-custom-shipping-method-core.php' );
+	}
+
+	function display_conditional_delivery_dates() {
+		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
+			return;
+		}
+
+		$packages = WC()->shipping->get_packages();
+		$meta_data = $packages[0]['rates']['onway_conditional_shipping_price']->meta_data;
+
+		$currentDateTime = new DateTime('NOW');
+		$today = $currentDateTime->format('l');
+
+		foreach ( $meta_data as $day => $logic ) {
+			if ( $today === $day && $logic !== 0 ) {
+				$deliveryDateTime = $currentDateTime->add(new DateInterval( 'P' . $logic . 'D' ));
+				$deliveryDay = $deliveryDateTime->format('l');
+				$deliveryDate = $deliveryDateTime->format('j F');
+
+				echo "<span class='conditional_date'>Today is $today, expect delivery by $deliveryDay, $deliveryDate</span>";
+			}
+		}
+
 	}
 
 	/**
