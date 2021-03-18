@@ -3,7 +3,7 @@
 Plugin Name: Onway Shipping Method for WooCommerce
 Plugin URI: https://github.com/burdulixda/onway-woo/
 Description: Add Onway shipping method to WooCommerce.
-Version: 1.6.1
+Version: 1.6.2
 Author: George Burduli
 Author URI: https://github.com/burdulixda
 Text Domain: onway-shipping-method-for-woocommerce
@@ -22,7 +22,7 @@ if ( ! class_exists( 'Onway_WC_Custom_Shipping_Method' ) ) :
  * Main Alg_WC_Custom_Shipping_Methods Class
  *
  * @class   Alg_WC_Custom_Shipping_Methods
- * @version 1.6.1
+ * @version 1.6.2
  * @since   1.0.0
  */
 final class Onway_WC_Custom_Shipping_Method {
@@ -33,7 +33,7 @@ final class Onway_WC_Custom_Shipping_Method {
 	 * @var   string
 	 * @since 1.0.0
 	 */
-	public $version = '1.6.1';
+	public $version = '1.6.2';
 
 	/**
 	 * @var   Alg_WC_Custom_Shipping_Methods The single instance of the class
@@ -113,14 +113,20 @@ final class Onway_WC_Custom_Shipping_Method {
 		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
 			return;
 		}
-
-		$packages = WC()->shipping->get_packages();
-		$meta_data = $packages[0]['rates']['onway_wc_shipping']->meta_data;
+		
+		function get_shipping_rates() {
+			$packages = WC()->shipping->get_packages();
+			$rates = $packages[0]['rates'];
+			foreach ( $rates as $key => $value ) {
+				$meta_data = $packages[0]['rates'][$key]->meta_data;
+			}
+			return $meta_data;
+		}
 
 		$currentDateTime = new DateTime('NOW');
 		$today = $currentDateTime->format('l');
 
-		foreach ( $meta_data as $day => $logic ) {
+		foreach ( get_shipping_rates() as $day => $logic ) {
 			if ( $today === $day && $logic !== 0 ) {
 				$deliveryDateTime = $currentDateTime->add(new DateInterval( 'P' . $logic . 'D' ));
 				$deliveryDay = $deliveryDateTime->format('l');

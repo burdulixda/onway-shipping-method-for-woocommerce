@@ -52,6 +52,7 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	function init() {
 		$this->instance_form_fields     = include( 'settings/settings-custom-shipping.php' );
 		$this->title                    = $this->get_option( 'title' );
+		$this->express_title						=	$this->get_option( 'express_title' );
 		$this->conditional_cost					= $this->get_option( 'conditional_cost' );
 		$this->express_delivery_status	= $this->get_option( 'express_delivery_status' );
 		$this->express_delivery_price		= $this->get_option( 'express_delivery_price' );
@@ -255,29 +256,44 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 
 		// Calculate the costs
 		$has_costs = false; // True when a cost is set. False if all costs are blank strings.
+		$id				 = $this->id;
 		$cost      = $this->get_option( 'cost' );
 
 		if ( $this->conditional_cost === 'enabled' ) {
 			$cost = $this->get_conditional_shipping_price( $weight );
 		}
 
-		$has_costs = true;
-		$rate = array(
-			'id'		=> $this->id,
-			'label'	=> $this->title,
-			'cost'	=> $cost,
-			'meta_data' => $this->get_conditional_shipping_dates()
+		$shippingMethods = array(
+			$this->title => $cost
 		);
+
+		if ( $this->express_delivery_status === 'enabled' ) {
+			$shippingMethods = array(
+				$this->title => $cost,
+				$this->express_title	=> $cost + $this->express_delivery_price
+			);
+		}
+
+		foreach ( $shippingMethods as $label => $cost ) {
+			$has_costs = true;
+			$rate = array(
+				'id'		=> $this->id . $cost,
+				'label'	=> $label,
+				'cost'	=> $cost,
+				'meta_data' => $this->get_conditional_shipping_dates()
+			);
+	
+			// Add the rate
+			if ( $has_costs ) {
+				$this->add_rate( apply_filters( 'onway_wc_custom_shipping_method_add_rate', $rate, $package, $this ) );
+			}
+		}
+
 
 		// Limits
 		// if ( in_array( $this->limit_calc, array( 'order', 'all' ) ) ) {
 		// 	$rate['cost'] = apply_filters( 'onway_wc_custom_shipping_method_min_max_limits', $rate['cost'], $this );
 		// }
-
-		// Add the rate
-		if ( $has_costs ) {
-			$this->add_rate( apply_filters( 'onway_wc_custom_shipping_method_add_rate', $rate, $package, $this ) );
-		}
 
 		/**
 		 * Developers can add additional rates based on this one via this action

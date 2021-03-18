@@ -143,6 +143,11 @@ $settings = array_merge( $settings, array(
 		'default'           => '',
 		'description'       => __( 'Express delivery options.', 'onway-shipping-method-for-woocommerce' ),
 	),
+	'express_title'	=> array(
+		'title'							=> __( 'Express delivery label', 'onway-shipping-method-for-woocommerce' ),
+		'type'							=> 'text',
+		'default'						=> __( 'Express Delivery', 'onway-shipping-method-for-woocommerce' ),
+	),
 	'express_delivery_status' => array(
 		'title'             => __( 'Express delivery status', 'onway-shipping-method-for-woocommerce' ),
 		'type'              => 'select',
