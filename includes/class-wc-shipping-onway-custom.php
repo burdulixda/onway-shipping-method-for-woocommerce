@@ -52,6 +52,9 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	function init() {
 		$this->instance_form_fields     = include( 'settings/settings-custom-shipping.php' );
 		$this->title                    = $this->get_option( 'title' );
+		$this->conditional_cost					= $this->get_option( 'conditional_cost' );
+		$this->express_delivery_status	= $this->get_option( 'express_delivery_status' );
+		$this->express_delivery_price		= $this->get_option( 'express_delivery_price' );
 
 		for ( $i = $this->weight_steps; $i <= $this->max_weight; $i += $this->weight_steps ) {
 			$this->{'weight_below_'."{$i}".'_kg'} = $this->get_option( 'weight_below_'.$i.'_kg', 0 );
@@ -254,17 +257,17 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 		$has_costs = false; // True when a cost is set. False if all costs are blank strings.
 		$cost      = $this->get_option( 'cost' );
 
-		if ( '' !== $cost ) {
-
-			$has_costs = true;
-			$rate = array(
-				'id'		=> 'onway_conditional_shipping_price',
-				'label'	=> $this->title,
-				'cost'	=> $this->get_conditional_shipping_price( $weight ),
-				'meta_data' => $this->get_conditional_shipping_dates()
-			);
-
+		if ( $this->conditional_cost === 'enabled' ) {
+			$cost = $this->get_conditional_shipping_price( $weight );
 		}
+
+		$has_costs = true;
+		$rate = array(
+			'id'		=> $this->id,
+			'label'	=> $this->title,
+			'cost'	=> $cost,
+			'meta_data' => $this->get_conditional_shipping_dates()
+		);
 
 		// Limits
 		// if ( in_array( $this->limit_calc, array( 'order', 'all' ) ) ) {

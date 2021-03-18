@@ -3,7 +3,7 @@
 Plugin Name: Onway Shipping Method for WooCommerce
 Plugin URI: https://github.com/burdulixda/onway-woo/
 Description: Add Onway shipping method to WooCommerce.
-Version: 1.6
+Version: 1.6.1
 Author: George Burduli
 Author URI: https://github.com/burdulixda
 Text Domain: onway-shipping-method-for-woocommerce
@@ -33,7 +33,7 @@ final class Onway_WC_Custom_Shipping_Method {
 	 * @var   string
 	 * @since 1.0.0
 	 */
-	public $version = '1.0.0';
+	public $version = '1.6.1';
 
 	/**
 	 * @var   Alg_WC_Custom_Shipping_Methods The single instance of the class
@@ -115,7 +115,7 @@ final class Onway_WC_Custom_Shipping_Method {
 		}
 
 		$packages = WC()->shipping->get_packages();
-		$meta_data = $packages[0]['rates']['onway_conditional_shipping_price']->meta_data;
+		$meta_data = $packages[0]['rates']['onway_wc_shipping']->meta_data;
 
 		$currentDateTime = new DateTime('NOW');
 		$today = $currentDateTime->format('l');
