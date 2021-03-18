@@ -1,0 +1,16 @@
+{
+  "name": "burdulixda/onway-shipping-method-for-woocommerce",
+  "description": "",
+  "keywords": ["wordpress", "plugin"],
+  "homepage": "https://github.com/burdulixda/onway-shipping-method-for-woocommerce",
+  "authors": [
+    {
+      "name": "George Burduli",
+      "homepage": "https://github.com/burdulixda"
+    }
+  ],
+  "type": "wordpress-plugin",
+  "require": {
+    "php": ">=5.6"
+  }
+}
