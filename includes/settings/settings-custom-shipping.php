@@ -2,7 +2,7 @@
 /**
  * Custom Shipping Methods for WooCommerce - Custom Shipping Settings
  *
- * @version 1.6.2
+ * @version 1.7
  * @since   1.0.0
  * @author  Tyche Softwares
  * @todo    [dev] (maybe) select dropdown for "Include/Exclude Cats/Tags"

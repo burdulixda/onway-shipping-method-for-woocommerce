@@ -2,7 +2,7 @@
 /**
  * Custom Shipping Methods for WooCommerce - Custom Shipping Class
  *
- * @version 1.6.2
+ * @version 1.7
  * @since   1.0.0
  * @author  Tyche Softwares
  */
@@ -45,7 +45,7 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	/**
 	 * init user set variables.
 	 *
-	 * @version 1.6.2
+	 * @version 1.7
 	 * @since   1.0.0
 	 * @todo    [feature] customizable admin title and description (i.e. per method instance)
 	 */
@@ -102,7 +102,7 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	/**
 	 * is this method available?
 	 *
-	 * @version 1.6.2
+	 * @version 1.7
 	 * @since   1.0.0
 	 * @param   array $package
 	 * @return  bool

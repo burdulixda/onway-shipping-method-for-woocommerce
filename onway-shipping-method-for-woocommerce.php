@@ -3,7 +3,7 @@
 Plugin Name: Onway Shipping Method for WooCommerce
 Plugin URI: https://github.com/burdulixda/onway-woo/
 Description: Add Onway shipping method to WooCommerce.
-Version: 1.6.2
+Version: 1.7
 Author: George Burduli
 Author URI: https://github.com/burdulixda
 Text Domain: onway-shipping-method-for-woocommerce
@@ -22,7 +22,7 @@ if ( ! class_exists( 'Onway_WC_Custom_Shipping_Method' ) ) :
  * Main Alg_WC_Custom_Shipping_Methods Class
  *
  * @class   Alg_WC_Custom_Shipping_Methods
- * @version 1.6.2
+ * @version 1.7
  * @since   1.0.0
  */
 final class Onway_WC_Custom_Shipping_Method {
@@ -33,7 +33,7 @@ final class Onway_WC_Custom_Shipping_Method {
 	 * @var   string
 	 * @since 1.0.0
 	 */
-	public $version = '1.6.2';
+	public $version = '1.7';
 
 	/**
 	 * @var   Alg_WC_Custom_Shipping_Methods The single instance of the class
@@ -80,7 +80,7 @@ final class Onway_WC_Custom_Shipping_Method {
 			$this->admin();
 		}
 
-		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'display_conditional_delivery_dates' ) );
+		add_action( 'conditional_shipping_hook', array( $this, 'display_conditional_delivery_dates' ) );
 	}
 
 	/**
@@ -131,8 +131,21 @@ final class Onway_WC_Custom_Shipping_Method {
 				$deliveryDateTime = $currentDateTime->add(new DateInterval( 'P' . $logic . 'D' ));
 				$deliveryDay = $deliveryDateTime->format('l');
 				$deliveryDate = $deliveryDateTime->format('j F');
+				$moreThanOne = WC()->cart->get_cart_contents_count() > 1 ? "ების" : "ის";
 
-				echo "<span class='conditional_date'>Today is $today, expect delivery by $deliveryDay, $deliveryDate</span>";
+				$lang = 'ge';
+
+				switch ($lang) {
+					case 'en':
+						setlocale(LC_TIME, 'en_CA.UTF-8');
+						echo strftime("%B %e, %G");
+						break;
+					case 'ge':
+						setlocale(LC_TIME, 'ka_GE.UTF-8');
+						echo '<span class="conditional_date">პროდუქტ' . $moreThanOne . ' მიღების სავარაუდო თარიღია: ' . strftime("%e %B", strtotime("+$logic day")) . '</span>';
+						break;
+				}
+
 			}
 		}
 
