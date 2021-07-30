@@ -123,7 +123,20 @@ final class Onway_WC_Custom_Shipping_Method {
 			return $meta_data;
 		}
 
+		$currentTime = date('h:i:s a');
+		$dayStart = "12:00:00 am";
+		$dayEnd = "15:00:00 pm";
+
+		$date1 = DateTime::createFromFormat('h:i:s a', $currentTime);
+		$date2 = DateTime::createFromFormat('h:i:s a', $dayStart);
+		$date3 = DateTime::createFromFormat('h:i:s a', $dayEnd);
+
 		$currentDateTime = new DateTime('NOW');
+
+		if ( $date1 >= $date2 && $date1 < $date3 ) {
+			$currentDateTime = $currentDateTime->add(new DateInterval('P1D'));
+		}
+
 		$today = $currentDateTime->format('l');
 
 		foreach ( get_shipping_rates() as $day => $logic ) {
