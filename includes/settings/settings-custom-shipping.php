@@ -63,13 +63,17 @@ $settings = array_merge( $settings, array(
 	),
 ) );
 
+$weight_steps_arr = explode( ', ', $this->weight_steps );
+// $conditional_shipping_prices = array();
+
 // Conditional shipping price fields
-for ( $i = $this->weight_steps; $i <= $this->max_weight; $i += $this->weight_steps ) {
-	$conditional_shipping_prices['weight_below_'.$i.'_kg'] = array(
-		'title'		=> __( "Price below $i kg", "onway-shipping-method-for-woocommerce" ),
-		'type'		=> 'number',
-		'default'	=> $i,
-		'id'			=> 'onway_wc_custom_shipping_method_weight_below_'.$i.'_kg'
+
+foreach ( $weight_steps_arr as $weight_step ) {
+	$conditional_shipping_prices['price_below_'.$weight_step.'_kg'] = array(
+		'title'   => __("Price below $weight_step kg", "onway-shipping-method-for-woocommerce"),
+		'type'    => 'number',
+		'default' => $weight_step,
+		'id'			=> 'onway_wc_custom_shipping_method_price_below_'.$weight_step.'_kg'
 	);
 }
 

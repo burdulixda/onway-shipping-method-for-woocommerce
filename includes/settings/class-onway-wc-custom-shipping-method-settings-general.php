@@ -72,7 +72,7 @@ class Onway_WC_Custom_Shipping_Method_Settings_General extends Onway_WC_Custom_S
 			),
 			'weight_steps'	=> array(
 				'title'		 => __( 'Weight steps', 'onway-shipping-method-for-woocommerce' ),
-				'type'		 => 'number',
+				'type'		 => 'text',
 				'desc'		 => __( 'Increment operator', 'onway-shipping-method-for-woocommerce' ),
 				'default'  => '5',
 				'id'			 => 'onway_wc_custom_shipping_method_weight_steps'

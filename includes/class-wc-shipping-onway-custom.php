@@ -57,23 +57,13 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 		$this->express_delivery_status	= $this->get_option( 'express_delivery_status' );
 		$this->express_delivery_price		= $this->get_option( 'express_delivery_price' );
 
-		for ( $i = $this->weight_steps; $i <= $this->max_weight; $i += $this->weight_steps ) {
-			$this->{'weight_below_'."{$i}".'_kg'} = $this->get_option( 'weight_below_'.$i.'_kg', 0 );
+		$weight_steps_arr = explode( ', ', $this->weight_steps );
 
-			$this->weight_based_cost[$i] = $this->get_option( 'weight_below_'.$i.'_kg', 0 );
+		foreach ( $weight_steps_arr as $weight_step ) {
+			$this->{'price_below_'."{$weight_step}".'_kg'} = $this->get_option( 'price_below_'.$weight_step.'_kg', 0 );
+
+			$this->weight_based_cost[$weight_step] = $this->get_option( 'price_below_'.$weight_step.'_kg', 0 );
 		}
-
-		// for ( $i = 0; $i < 7; $i++ ) {
-		// 	$day = jddayofweek($i, 1);
-		// 	$day = lcfirst($day);
-
-		// 	$this->{"{$day}" . '_delivery_logic'} = $this->get_option( $day . '_delivery_logic', 0 );
-
-		// 	$this->conditional_delivery_date[$day] = $this->get_option( $day . '_delivery_logic', 0 );
-		// }
-
-		$this->monday_delivery_logic = $this->get_option( 'monday_delivery_logic', 0 );
-
 	}
 
 	/**
