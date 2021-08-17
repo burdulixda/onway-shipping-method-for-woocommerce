@@ -198,10 +198,12 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 		return $calculated_fee;
 	}
 
-	function get_conditional_shipping_price( $weight ) {
+	function get_conditional_shipping_price( $weight, $cost ) {
 		foreach ( $this->weight_based_cost as $max_conditional_weight => $conditional_price ) {
 			if ( $max_conditional_weight >= $weight ) {
 				return $this->weight_based_cost[$max_conditional_weight];
+			} else {
+				return $cost;
 			}
 		}
 	}
@@ -229,13 +231,22 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 	 */
 	function calculate_shipping( $package = array() ) {
 		$weight = 0;
+		$total_value = 0.0;
 
 		foreach ( $package['contents'] as $item_id => $values ) {
 			$_product = $values['data'];
+			$dimensions = $_product->get_dimensions(0);
+			$product_value = round((array_product($dimensions) / 5000) * $values['quantity'], 2);
 			$weight = $weight + $_product->get_weight() * $values['quantity'];
+			
+			$total_value += $product_value;
 		}
 
-		$weight = wc_get_weight( $weight, 'kg' );
+		if ( $total_value > $weight ) {
+			$weight = wc_get_weight( $total_value, 'kg' );
+		} else {
+			$weight = wc_get_weight( $weight, 'kg' );
+		}
 
 		$rate = array(
 			'id'      => $this->get_rate_id(),
@@ -250,7 +261,7 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 		$cost      = $this->get_option( 'cost' );
 
 		if ( $this->conditional_cost === 'enabled' ) {
-			$cost = $this->get_conditional_shipping_price( $weight );
+			$cost = $this->get_conditional_shipping_price( $weight, $cost );
 		}
 
 		$shippingMethods = array(

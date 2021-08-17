@@ -3,7 +3,7 @@
 Plugin Name: Onway Shipping Method for WooCommerce
 Plugin URI: https://github.com/burdulixda/onway-woo/
 Description: Add Onway shipping method to WooCommerce.
-Version: 1.9
+Version: 2.0
 Author: George Burduli
 Author URI: https://github.com/burdulixda
 Text Domain: onway-shipping-method-for-woocommerce
@@ -22,7 +22,7 @@ if ( ! class_exists( 'Onway_WC_Custom_Shipping_Method' ) ) :
  * Main Alg_WC_Custom_Shipping_Methods Class
  *
  * @class   Alg_WC_Custom_Shipping_Methods
- * @version 1.9
+ * @version 20.0
  * @since   1.0.0
  */
 final class Onway_WC_Custom_Shipping_Method {
@@ -33,7 +33,7 @@ final class Onway_WC_Custom_Shipping_Method {
 	 * @var   string
 	 * @since 1.0.0
 	 */
-	public $version = '1.9';
+	public $version = '2.0';
 
 	/**
 	 * @var   Alg_WC_Custom_Shipping_Methods The single instance of the class
@@ -81,6 +81,7 @@ final class Onway_WC_Custom_Shipping_Method {
 		}
 
 		add_action( 'conditional_shipping_hook', array( $this, 'display_conditional_delivery_dates' ) );
+		// add_action( 'conditional_shipping_hook', array( $this, 'calculate_delivery_date' ) );
 	}
 
 	/**
@@ -109,6 +110,14 @@ final class Onway_WC_Custom_Shipping_Method {
 		$this->core = require_once( 'includes/class-onway-wc-custom-shipping-method-core.php' );
 	}
 
+	function isBetween($from, $till, $input) {
+    $f = DateTime::createFromFormat('!H:i', $from);
+    $t = DateTime::createFromFormat('!H:i', $till);
+    $i = DateTime::createFromFormat('!H:i', $input);
+    if ($f > $t) $t->modify('+1 day');
+    return ($f <= $i && $i <= $t) || ($f <= $i->modify('+1 day') && $i <= $t);
+	}
+
 	function display_conditional_delivery_dates() {
 		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
 			return;
@@ -123,17 +132,34 @@ final class Onway_WC_Custom_Shipping_Method {
 			return $meta_data;
 		}
 
-		$currentTime = date('h:i:s a');
-		$dayStart = "12:00:00 am";
-		$dayEnd = "15:00:00 pm";
-
-		$date1 = DateTime::createFromFormat('h:i:s a', $currentTime);
-		$date2 = DateTime::createFromFormat('h:i:s a', $dayStart);
-		$date3 = DateTime::createFromFormat('h:i:s a', $dayEnd);
+		date_default_timezone_set('Asia/Tbilisi');
+		$currentTime = date('H:i');
+		
+		$dayStart = "00:00";
+		$dayEnd = "15:00";
 
 		$currentDateTime = new DateTime('NOW');
+		$today = $currentDateTime->format('l');
 
-		if ( $date1 >= $date2 && $date1 < $date3 ) {
+		if ( $today === 'Saturday' ) {
+			$dayEnd = "12:00";
+		}
+
+		$total_value = 0.0;
+
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			$dimensions = $cart_item['data']->get_dimensions(0);
+			$product_value = round((array_product($dimensions) / 5000) * $cart_item['quantity'], 2);
+			$weight = wc_get_weight( $cart_item['data']->get_weight(), 'kg' ) * $cart_item['quantity'];
+
+			if ( $product_value > $weight ) {
+				$weight = wc_get_weight( $product_value, 'kg' );
+			}
+
+			$total_value += $product_value;
+		}
+
+		if ( ! $this->isBetween($dayStart, $dayEnd, $currentTime) ) {
 			$currentDateTime = $currentDateTime->add(new DateInterval('P1D'));
 		}
 
@@ -155,7 +181,7 @@ final class Onway_WC_Custom_Shipping_Method {
 						break;
 					case 'ge':
 						setlocale(LC_TIME, 'ka_GE.UTF-8');
-						echo '<span class="conditional_date">პროდუქტ' . $moreThanOne . ' მიღების სავარაუდო თარიღია: ' . strftime("%e %B", strtotime("+$logic day")) . '</span>';
+						echo '<span class="conditional_date">პროდუქტ' . $moreThanOne . ' მიღების თარიღია: ' . strftime("%e %B", strtotime("+$logic day")) . '</span>';
 						break;
 				}
 
