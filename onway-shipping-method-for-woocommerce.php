@@ -3,7 +3,7 @@
 Plugin Name: Onway Shipping Method for WooCommerce
 Plugin URI: https://github.com/burdulixda/onway-woo/
 Description: Add Onway shipping method to WooCommerce.
-Version: 2.1
+Version: 2.2
 Author: George Burduli
 Author URI: https://github.com/burdulixda
 Text Domain: onway-shipping-method-for-woocommerce
@@ -33,7 +33,7 @@ final class Onway_WC_Custom_Shipping_Method {
 	 * @var   string
 	 * @since 1.0.0
 	 */
-	public $version = '2.1';
+	public $version = '2.2';
 
 	/**
 	 * @var   Alg_WC_Custom_Shipping_Methods The single instance of the class
@@ -122,7 +122,7 @@ final class Onway_WC_Custom_Shipping_Method {
 		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
 			return;
 		}
-		
+	
 		function get_shipping_rates() {
 			$packages = WC()->shipping->get_packages();
 			$rates = $packages[0]['rates'];
@@ -131,49 +131,49 @@ final class Onway_WC_Custom_Shipping_Method {
 			}
 			return $meta_data;
 		}
-
-		date_default_timezone_set('Asia/Tbilisi');
-		$currentTime = date('H:i');
-		
+	
+		$tz = new DateTimeZone('Asia/Tbilisi');
+		$currentDateTime = new DateTime('NOW', $tz);
+		$currentTime = $currentDateTime->format('H:i');
+	
 		$dayStart = "00:00";
 		$dayEnd = "15:00";
-
-		$currentDateTime = new DateTime('NOW');
 		$today = $currentDateTime->format('l');
-
-		if ( $today === 'Saturday' ) {
+	
+		if ($today === 'Saturday') {
 			$dayEnd = "12:00";
 		}
-
+	
 		$total_value = 0.0;
-
+	
 		foreach ( WC()->cart->get_cart() as $cart_item ) {
 			$dimensions = $cart_item['data']->get_dimensions(0);
 			$product_value = round((array_product($dimensions) / 5000) * $cart_item['quantity'], 2);
 			$weight = wc_get_weight( $cart_item['data']->get_weight(), 'kg' ) * $cart_item['quantity'];
-
+	
 			if ( $product_value > $weight ) {
 				$weight = wc_get_weight( $product_value, 'kg' );
 			}
-
+	
 			$total_value += $product_value;
 		}
-
+	
 		if ( ! $this->isBetween($dayStart, $dayEnd, $currentTime) ) {
-			$currentDateTime = $currentDateTime->add(new DateInterval('P1D'));
+			$currentDateTime->add(new DateInterval('P1D'));
 		}
-
+	
 		$today = $currentDateTime->format('l');
-
+	
 		foreach ( get_shipping_rates() as $day => $logic ) {
 			if ( $today === $day && $logic !== 0 ) {
-				$deliveryDateTime = $currentDateTime->add(new DateInterval( 'P' . $logic . 'D' ));
+				$deliveryDateTime = clone $currentDateTime;
+				$deliveryDateTime->add(new DateInterval('P' . $logic . 'D'));
 				$deliveryDay = $deliveryDateTime->format('l');
 				$deliveryDate = $deliveryDateTime->format('j F');
 				$moreThanOne = WC()->cart->get_cart_contents_count() > 1 ? "ების" : "ის";
-
+	
 				$lang = 'ge';
-
+	
 				switch ($lang) {
 					case 'en':
 						setlocale(LC_TIME, 'en_CA.UTF-8');
@@ -181,14 +181,13 @@ final class Onway_WC_Custom_Shipping_Method {
 						break;
 					case 'ge':
 						setlocale(LC_TIME, 'ka_GE.UTF-8');
-						echo '<span class="conditional_date">პროდუქტ' . $moreThanOne . ' მიღების თარიღია: ' . strftime("%e %B", strtotime("+$logic day")) . '</span>';
+						echo '<span class="conditional_date">პროდუქტ' . $moreThanOne . ' მიღების თარიღია: ' . strftime("%e %B", $deliveryDateTime->getTimestamp()) . '</span>';
 						break;
 				}
-
 			}
 		}
-
 	}
+	
 
 	/**
 	 * admin.
