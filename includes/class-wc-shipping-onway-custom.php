@@ -237,7 +237,7 @@ class WC_Shipping_Onway_Custom extends WC_Shipping_Method {
 			$_product = $values['data'];
 			$dimensions = $_product->get_dimensions(0);
 			$product_value = round((array_product($dimensions) / 5000) * $values['quantity'], 2);
-			$weight = $weight + $_product->get_weight() * $values['quantity'];
+			$weight = $weight + (float)$_product->get_weight() * $values['quantity'];
 			
 			$total_value += $product_value;
 		}
